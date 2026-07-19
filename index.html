@@ -683,11 +683,15 @@ section {
 .work-item { position: relative; }
 .video-frame {
   position: relative;
+  display: block;
   aspect-ratio: 16 / 9;
   background: #000;
   border: 1px solid rgba(212,160,23,0.28);
   border-radius: 2px;
   overflow: hidden;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
   box-shadow:
     0 24px 60px -20px rgba(0,0,0,0.75),
     inset 0 0 0 1px rgba(255,255,255,0.02);
@@ -702,27 +706,44 @@ section {
   inset: 4px;
   border: 1px solid rgba(240,208,96,0.10);
   pointer-events: none;
-  z-index: 2;
+  z-index: 3;
   transition: border-color 0.55s ease;
 }
 .video-frame::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, transparent 0%, transparent 70%, rgba(139,90,15,0.12) 100%);
+  z-index: 2;
+  background:
+    radial-gradient(ellipse 92% 92% at 50% 50%, transparent 45%, rgba(0,0,0,0.42) 100%),
+    linear-gradient(180deg, transparent 0%, transparent 68%, rgba(139,90,15,0) 100%);
   pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.55s ease;
-  z-index: 1;
+  transition: background 0.55s ease;
 }
-.video-frame iframe {
+.video-thumb {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  border: 0;
+  object-fit: cover;
   display: block;
+  z-index: 0;
+  filter: brightness(0.94) saturate(1.04);
+  transition: transform 0.9s cubic-bezier(0.22,1,0.36,1), filter 0.55s ease;
 }
+.yt-play {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 88px; height: 62px;
+  transform: translate(-50%,-50%);
+  z-index: 4;
+  pointer-events: none;
+  transition: transform 0.5s cubic-bezier(0.22,1,0.36,1), filter 0.5s ease;
+  filter: drop-shadow(0 10px 28px rgba(0,0,0,0.6));
+}
+.yt-play svg { display: block; width: 100%; height: 100%; }
+.yt-play .yt-play-bg { transition: fill 0.3s ease; }
+
 .work-item:hover .video-frame {
   transform: translateY(-6px);
   border-color: rgba(212,160,23,0.55);
@@ -731,7 +752,23 @@ section {
     0 24px 60px -20px rgba(0,0,0,0.85);
 }
 .work-item:hover .video-frame::before { border-color: rgba(240,208,96,0.28); }
-.work-item:hover .video-frame::after  { opacity: 1; }
+.work-item:hover .video-frame::after {
+  background:
+    radial-gradient(ellipse 92% 92% at 50% 50%, transparent 45%, rgba(0,0,0,0.32) 100%),
+    linear-gradient(180deg, transparent 0%, transparent 62%, rgba(139,90,15,0.18) 100%);
+}
+.work-item:hover .video-thumb {
+  transform: scale(1.05);
+  filter: brightness(1.02) saturate(1.1);
+}
+.work-item:hover .yt-play {
+  transform: translate(-50%,-50%) scale(1.12);
+  filter: drop-shadow(0 12px 32px rgba(255,0,0,0.35)) drop-shadow(0 6px 12px rgba(0,0,0,0.5));
+}
+.video-frame:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 4px;
+}
 
 .video-caption {
   margin-top: 22px;
@@ -1406,29 +1443,47 @@ section {
 
     <div class="works-grid">
       <div class="work-item reveal" data-delay="2">
-        <div class="video-frame">
-          <iframe
-            src="https://www.youtube-nocookie.com/embed/clMGzTjPSyM?rel=0&modestbranding=1&start=135"
-            title="PrismRay Studios — Featured Production"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            referrerpolicy="strict-origin-when-cross-origin"
-            loading="lazy"
-            allowfullscreen></iframe>
-        </div>
-        <p class="video-caption">Featured Production</p>
+        <a class="video-frame"
+           href="https://www.youtube.com/watch?v=hW-YvOeF-y4"
+           target="_blank" rel="noopener noreferrer"
+           aria-label="Watch AUREN — The Awakening on YouTube">
+          <img class="video-thumb"
+               src="https://i.ytimg.com/vi/hW-YvOeF-y4/maxresdefault.jpg"
+               onerror="this.onerror=null;this.src='https://i.ytimg.com/vi/hW-YvOeF-y4/hqdefault.jpg';"
+               alt="AUREN — The Awakening"
+               loading="lazy" width="1280" height="720" decoding="async" />
+          <span class="yt-play" aria-hidden="true">
+            <svg viewBox="0 0 68 48" xmlns="http://www.w3.org/2000/svg">
+              <path class="yt-play-bg"
+                    d="M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,0.13,34,0,34,0S12.21,0.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z"
+                    fill="#FF0000"/>
+              <polygon points="45,24 27,14 27,34" fill="#FFFFFF"/>
+            </svg>
+          </span>
+        </a>
+        <p class="video-caption">AUREN — The Awakening</p>
       </div>
 
       <div class="work-item reveal" data-delay="3">
-        <div class="video-frame">
-          <iframe
-            src="https://www.youtube-nocookie.com/embed/hW-YvOeF-y4?rel=0&modestbranding=1"
-            title="PrismRay Studios — Cinematic Showcase"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            referrerpolicy="strict-origin-when-cross-origin"
-            loading="lazy"
-            allowfullscreen></iframe>
-        </div>
-        <p class="video-caption">Cinematic Showcase</p>
+        <a class="video-frame"
+           href="https://www.youtube.com/watch?v=clMGzTjPSyM"
+           target="_blank" rel="noopener noreferrer"
+           aria-label="Watch AUREN — Behind The Scenes on YouTube">
+          <img class="video-thumb"
+               src="https://i.ytimg.com/vi/clMGzTjPSyM/maxresdefault.jpg"
+               onerror="this.onerror=null;this.src='https://i.ytimg.com/vi/clMGzTjPSyM/hqdefault.jpg';"
+               alt="AUREN — Behind The Scenes"
+               loading="lazy" width="1280" height="720" decoding="async" />
+          <span class="yt-play" aria-hidden="true">
+            <svg viewBox="0 0 68 48" xmlns="http://www.w3.org/2000/svg">
+              <path class="yt-play-bg"
+                    d="M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,0.13,34,0,34,0S12.21,0.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z"
+                    fill="#FF0000"/>
+              <polygon points="45,24 27,14 27,34" fill="#FFFFFF"/>
+            </svg>
+          </span>
+        </a>
+        <p class="video-caption">AUREN — Behind The Scenes</p>
       </div>
     </div>
   </div>
