@@ -63,13 +63,44 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 
 /* ============================================================
-   COSMIC NEBULA BACKGROUND (CSS RECREATION)
+   VIDEO BACKGROUND + OVERLAY
+   ============================================================ */
+
+#bg-video {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  object-position: center center;
+  z-index: -4;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1.2s cubic-bezier(0.22,1,0.36,1);
+  will-change: transform;
+  background: #07050A;
+}
+#bg-video.--loaded { opacity: 1; }
+
+.video-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 45%, rgba(5,3,5,0.35) 0%, rgba(5,3,5,0.62) 60%, rgba(5,3,5,0.78) 100%);
+}
+
+/* ============================================================
+   COSMIC NEBULA BACKGROUND (fallback while video loads)
    ============================================================ */
 
 .nebula-canvas {
   position: fixed;
   inset: 0;
-  z-index: -2;
+  z-index: -3;
+  opacity: 1;
+  transition: opacity 1.2s cubic-bezier(0.22,1,0.36,1);
   background-color: #07050A;
   background-image:
     /* subtle warm amber glow, upper-center — like a distant sun */
@@ -492,7 +523,7 @@ section {
   transition: opacity 0.9s cubic-bezier(0.22,1,0.36,1), transform 0.9s cubic-bezier(0.22,1,0.36,1);
   will-change: opacity, transform;
 }
-.reveal.--in {
+.reveal.--in, .reveal.revealed {
   opacity: 1;
   transform: translateY(0);
 }
@@ -504,6 +535,38 @@ section {
 .reveal[data-delay="6"]  { transition-delay: 0.60s; }
 .reveal[data-delay="7"]  { transition-delay: 0.70s; }
 .reveal[data-delay="8"]  { transition-delay: 0.80s; }
+
+/* Directional slide reveals — cinematic scroll entry */
+.reveal-left,
+.reveal-right,
+.reveal-bottom {
+  opacity: 0;
+  transition:
+    opacity 0.9s cubic-bezier(0.22,1,0.36,1),
+    transform 0.9s cubic-bezier(0.22,1,0.36,1);
+  will-change: opacity, transform;
+}
+.reveal-left    { transform: translateX(-64px); }
+.reveal-right   { transform: translateX(64px); }
+.reveal-bottom  { transform: translateY(56px); }
+.reveal-left.revealed,
+.reveal-right.revealed,
+.reveal-bottom.revealed {
+  opacity: 1 !important;
+  transform: translate(0, 0) !important;
+}
+
+/* Gold line — grows from center outward on reveal */
+.gold-line {
+  display: block;
+  width: 0;
+  max-width: 900px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--gold) 20%, var(--gold) 80%, transparent 100%);
+  margin: 56px auto;
+  transition: width 1.2s cubic-bezier(0.22,1,0.36,1);
+}
+.gold-line.revealed { width: 100%; }
 
 /* ============================================================
    ABOUT
@@ -1208,6 +1271,8 @@ section {
    REDUCED MOTION
    ============================================================ */
 
+.nebula-canvas.--faded { opacity: 0; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
@@ -1215,9 +1280,14 @@ section {
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
-  .reveal { opacity: 1; transform: none; }
+  .reveal, .reveal-left, .reveal-right, .reveal-bottom {
+    opacity: 1;
+    transform: none;
+  }
+  .gold-line { width: 100%; }
   .hero-tagline, .hero-subtag, .hero-cta { opacity: 1; }
   .particle { display: none; }
+  #bg-video { display: none; }
 }
 </style>
 </head>
@@ -1314,9 +1384,17 @@ section {
 </svg>
 
 <!-- ============================================================
-     COSMIC BACKGROUND
+     SCROLL-DRIVEN VIDEO BACKGROUND
      ============================================================ -->
-<div class="nebula-canvas" aria-hidden="true"></div>
+<video id="bg-video" muted playsinline webkit-playsinline preload="auto" aria-hidden="true">
+  <source src="assets/prismray-bg.mp4" type="video/mp4" />
+</video>
+<div class="video-overlay" aria-hidden="true"></div>
+
+<!-- ============================================================
+     COSMIC BACKGROUND (fallback while video loads)
+     ============================================================ -->
+<div class="nebula-canvas" id="nebulaCanvas" aria-hidden="true"></div>
 <div class="particles" id="particles" aria-hidden="true"></div>
 
 <!-- ============================================================
@@ -1376,12 +1454,12 @@ section {
   <div class="container">
     <div class="about-grid">
       <div>
-        <div class="eyebrow reveal">Our Ethos</div>
-        <h2 class="about-headline reveal" data-delay="1">
-          <span class="line-one">We Don't Make Videos.</span>
-          <span class="line-two">We Craft Experiences.</span>
+        <div class="eyebrow reveal-left">Our Ethos</div>
+        <h2 class="about-headline">
+          <span class="line-one reveal-left" data-reveal-delay="150">We Don't Make Videos.</span>
+          <span class="line-two reveal-right" data-reveal-delay="300">We Craft Experiences.</span>
         </h2>
-        <p class="about-body reveal" data-delay="2">
+        <p class="about-body reveal-bottom" data-reveal-delay="450">
           PrismRay Studios is a premium AI-powered creative production house built on one belief:
           every frame must earn its place. We combine cinematic storytelling with cutting-edge AI
           technology to produce content that doesn't just communicate — it captivates. From global
@@ -1390,15 +1468,15 @@ section {
         </p>
       </div>
       <div class="about-stats">
-        <div class="reveal" data-delay="2">
+        <div class="reveal-right" data-reveal-delay="200">
           <div class="stat-num">16+</div>
           <div class="stat-label">Service Formats</div>
         </div>
-        <div class="reveal" data-delay="3">
+        <div class="reveal-right" data-reveal-delay="400">
           <div class="stat-num">Film-Level</div>
           <div class="stat-label">Quality · Every Project</div>
         </div>
-        <div class="reveal" data-delay="4">
+        <div class="reveal-right" data-reveal-delay="600">
           <div class="stat-num">AI + Cinema</div>
           <div class="stat-label">Combined</div>
         </div>
@@ -1413,9 +1491,9 @@ section {
 <section class="services" id="services">
   <div class="container">
     <div class="services-header">
-      <div class="eyebrow reveal">What We Create</div>
-      <h2 class="section-title reveal" data-delay="1">A Universe of <em>Creative Formats</em></h2>
-      <p class="section-lead reveal" data-delay="2">
+      <div class="eyebrow reveal-left">What We Create</div>
+      <h2 class="section-title reveal-right" data-reveal-delay="150">A Universe of <em>Creative Formats</em></h2>
+      <p class="section-lead reveal-bottom" data-reveal-delay="300">
         From a 15-second reel to a feature-length film — every format receives identical creative
         attention, production craft, and cinematic intention.
       </p>
@@ -1433,16 +1511,16 @@ section {
 <section class="works" id="works">
   <div class="container">
     <div class="works-header">
-      <div class="eyebrow reveal">Selected Work</div>
-      <h2 class="section-title reveal" data-delay="1">Frames That <em>Live On</em></h2>
-      <p class="section-lead reveal" data-delay="2">
+      <div class="eyebrow reveal-left">Selected Work</div>
+      <h2 class="section-title reveal-right" data-reveal-delay="150">Frames That <em>Live On</em></h2>
+      <p class="section-lead reveal-bottom" data-reveal-delay="300">
         A glimpse into recent productions — where storytelling, cinematography,
         and artificial intelligence converge into cinema.
       </p>
     </div>
 
     <div class="works-grid">
-      <div class="work-item reveal" data-delay="2">
+      <div class="work-item reveal-left" data-reveal-delay="200">
         <a class="video-frame"
            href="https://www.youtube.com/watch?v=hW-YvOeF-y4"
            target="_blank" rel="noopener noreferrer"
@@ -1464,7 +1542,7 @@ section {
         <p class="video-caption">AUREN — The Awakening</p>
       </div>
 
-      <div class="work-item reveal" data-delay="3">
+      <div class="work-item reveal-right" data-reveal-delay="350">
         <a class="video-frame"
            href="https://www.youtube.com/watch?v=clMGzTjPSyM"
            target="_blank" rel="noopener noreferrer"
@@ -1494,22 +1572,22 @@ section {
      ============================================================ -->
 <section class="philosophy" id="philosophy">
   <div class="container">
-    <div class="eyebrow reveal">Our Creative Philosophy</div>
-    <h2 class="section-title reveal" data-delay="1" style="max-width:800px;margin:0 auto;">The PrismRay Standard</h2>
-    <blockquote class="philosophy-quote reveal" data-delay="2">
+    <div class="eyebrow reveal-bottom">Our Creative Philosophy</div>
+    <h2 class="section-title reveal-bottom" data-reveal-delay="150" style="max-width:800px;margin:0 auto;">The PrismRay Standard</h2>
+    <blockquote class="philosophy-quote reveal-bottom" data-reveal-delay="300">
       Quality is never determined by duration. A 15-second reel and a 10-minute film receive the same obsession.
     </blockquote>
 
     <div class="pillars">
-      <div class="pillar reveal" data-delay="2">
+      <div class="pillar reveal-left" data-reveal-delay="200">
         <h3 class="pillar-title">Storytelling First</h3>
         <p class="pillar-desc">We begin every project with a question: what do we want the audience to feel? The answer becomes the blueprint.</p>
       </div>
-      <div class="pillar reveal" data-delay="3">
+      <div class="pillar reveal-bottom" data-reveal-delay="400">
         <h3 class="pillar-title">Cinematic at Every Scale</h3>
         <p class="pillar-desc">Film-level cinematography, color grading, sound design, and composition — applied to every format without exception.</p>
       </div>
-      <div class="pillar reveal" data-delay="4">
+      <div class="pillar reveal-right" data-reveal-delay="600">
         <h3 class="pillar-title">AI as Creative Partner</h3>
         <p class="pillar-desc">We harness artificial intelligence not as a shortcut, but as a new lens through which cinematic worlds become possible.</p>
       </div>
@@ -1522,13 +1600,13 @@ section {
      ============================================================ -->
 <section class="promise">
   <div class="container">
-    <h2 class="promise-title reveal">We leave a lasting impression.</h2>
-    <p class="promise-body reveal" data-delay="1">
+    <h2 class="promise-title reveal-bottom">We leave a lasting impression.</h2>
+    <p class="promise-body reveal-bottom" data-reveal-delay="200">
       Every deliverable — regardless of budget, format, or duration — is built to compete with the
       world's best creative studios. That is the PrismRay promise.
     </p>
-    <div class="promise-rule reveal" data-delay="2"></div>
-    <a href="#contact" class="btn-gold reveal" data-delay="3">Start Your Project</a>
+    <div class="promise-rule gold-line" data-reveal-delay="400"></div>
+    <a href="#contact" class="btn-gold reveal-bottom" data-reveal-delay="600">Start Your Project</a>
   </div>
 </section>
 
@@ -1537,9 +1615,9 @@ section {
      ============================================================ -->
 <section class="contact" id="contact">
   <div class="container">
-    <div class="eyebrow reveal">Let's Create Together</div>
-    <h2 class="section-title reveal" data-delay="1">Ready to bring your <em>vision</em> to life?</h2>
-    <p class="section-lead reveal" data-delay="2">
+    <div class="eyebrow reveal-left">Let's Create Together</div>
+    <h2 class="section-title reveal-right" data-reveal-delay="150">Ready to bring your <em>vision</em> to life?</h2>
+    <p class="section-lead reveal-bottom" data-reveal-delay="300">
       Whether you're a global brand, an indie creator, or a startup with a story — PrismRay Studios
       is ready to build something extraordinary with you.
     </p>
@@ -1547,7 +1625,7 @@ section {
     <div class="contact-grid">
       <!-- Left: contact info -->
       <div>
-        <a class="contact-item reveal" data-delay="2" href="tel:+918641032960">
+        <a class="contact-item reveal-left" data-reveal-delay="400" href="tel:+918641032960">
           <span class="contact-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.72 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.35 1.85.59 2.81.72A2 2 0 0 1 22 16.92z"/></svg>
           </span>
@@ -1557,7 +1635,7 @@ section {
           </div>
         </a>
 
-        <a class="contact-item reveal" data-delay="3" href="mailto:prismraystudios@gmail.com">
+        <a class="contact-item reveal-left" data-reveal-delay="550" href="mailto:prismraystudios@gmail.com">
           <span class="contact-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
           </span>
@@ -1567,7 +1645,7 @@ section {
           </div>
         </a>
 
-        <a class="contact-item reveal" data-delay="4" href="https://www.instagram.com/prismraystudios/" target="_blank" rel="noopener noreferrer">
+        <a class="contact-item reveal-left" data-reveal-delay="700" href="https://www.instagram.com/prismraystudios/" target="_blank" rel="noopener noreferrer">
           <span class="contact-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
           </span>
@@ -1577,7 +1655,7 @@ section {
           </div>
         </a>
 
-        <a class="contact-item reveal" data-delay="5" href="https://www.linkedin.com/company/prismray-studios/" target="_blank" rel="noopener noreferrer">
+        <a class="contact-item reveal-left" data-reveal-delay="850" href="https://www.linkedin.com/company/prismray-studios/" target="_blank" rel="noopener noreferrer">
           <span class="contact-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
           </span>
@@ -1589,7 +1667,7 @@ section {
       </div>
 
       <!-- Right: form -->
-      <form class="contact-form reveal" data-delay="3" id="contactForm"
+      <form class="contact-form reveal-right" data-reveal-delay="400" id="contactForm"
             action="https://formsubmit.co/prismraystudios@gmail.com"
             method="POST" novalidate>
         <!-- FormSubmit configuration (hidden fields) -->
@@ -1721,8 +1799,13 @@ section {
     const frag = document.createDocumentFragment();
     SERVICES.forEach((s, i) => {
       const card = document.createElement('div');
-      card.className = 'service-card reveal';
-      card.setAttribute('data-delay', String((i % 4) + 1));
+      // Alternate slide direction by grid column for a cinematic waterfall
+      const col = i % 4;
+      const dir = (col === 0 || col === 2) ? 'reveal-left'
+                : (col === 1 || col === 3) ? 'reveal-right'
+                : 'reveal-bottom';
+      card.className = `service-card ${dir}`;
+      card.setAttribute('data-reveal-delay', String(i * 80));
       card.innerHTML = `
         <div class="service-icon">${ICONS[s.icon] || ICONS.star}</div>
         <h3 class="service-name">${s.name}</h3>
@@ -1752,19 +1835,93 @@ section {
   }
 
   /* ------------- Scroll reveal (IntersectionObserver) ------------- */
-  const revealEls = document.querySelectorAll('.reveal');
+  const revealEls = document.querySelectorAll(
+    '.reveal, .reveal-left, .reveal-right, .reveal-bottom, .gold-line'
+  );
   if ('IntersectionObserver' in window) {
     const io = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          entry.target.classList.add('--in');
-          io.unobserve(entry.target);
+          const delayMs = parseInt(entry.target.getAttribute('data-reveal-delay') || '0', 10);
+          const target  = entry.target;
+          const trigger = () => target.classList.add('--in', 'revealed');
+          if (delayMs > 0) setTimeout(trigger, delayMs); else trigger();
+          io.unobserve(target);
         }
       });
-    }, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
+    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
     revealEls.forEach(el => io.observe(el));
   } else {
-    revealEls.forEach(el => el.classList.add('--in'));
+    revealEls.forEach(el => el.classList.add('--in', 'revealed'));
+  }
+
+  /* ------------- Scroll-driven video background (with lerp) ------------- */
+  const video   = document.getElementById('bg-video');
+  const nebula  = document.getElementById('nebulaCanvas');
+  const prefersReduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isMobile = window.matchMedia('(max-width: 767px)').matches;
+
+  if (video && !prefersReduced) {
+    let targetTime  = 0;
+    let currentTime = 0;
+    let rafRunning  = false;
+    let scrubbing   = false; // true only on desktop
+    const LERP      = 0.09;
+
+    const lerp = (a, b, t) => a + (b - a) * t;
+
+    const onLoaded = () => {
+      video.classList.add('--loaded');
+      if (nebula) nebula.classList.add('--faded');
+      if (scrubbing) computeAndKick();
+    };
+
+    function computeAndKick() {
+      const dur = video.duration;
+      if (!dur || isNaN(dur) || !isFinite(dur)) return;
+      const docH = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+      const frac = Math.min(1, Math.max(0, window.scrollY / docH));
+      targetTime = frac * dur;
+      if (!rafRunning) { rafRunning = true; requestAnimationFrame(step); }
+    }
+
+    function step() {
+      const delta = targetTime - currentTime;
+      if (Math.abs(delta) < 0.006) {
+        rafRunning = false;
+        return;
+      }
+      currentTime = lerp(currentTime, targetTime, LERP);
+      try { video.currentTime = currentTime; } catch (_) {}
+      requestAnimationFrame(step);
+    }
+
+    video.addEventListener('loadedmetadata', onLoaded, { once: true });
+    video.addEventListener('canplay', onLoaded, { once: true });
+
+    if (isMobile) {
+      // On mobile: gentle autoplay loop instead of scroll-scrub (performance)
+      video.loop = true;
+      video.playbackRate = 0.35;
+      const tryPlay = () => video.play().catch(() => {});
+      video.addEventListener('loadedmetadata', tryPlay, { once: true });
+      // In case metadata is already available
+      if (video.readyState >= 1) tryPlay();
+    } else {
+      // Desktop: scroll-scrub with lerp smoothing
+      scrubbing = true;
+      video.pause();
+      video.currentTime = 0;
+      window.addEventListener('scroll', computeAndKick, { passive: true });
+      window.addEventListener('resize', computeAndKick, { passive: true });
+      if (video.readyState >= 1) computeAndKick();
+    }
+
+    // Load kick — some browsers won't fire loadedmetadata until first play attempt
+    try { video.load(); } catch (_) {}
+  } else if (video && prefersReduced) {
+    // Reduced motion: keep the nebula fallback, hide the video entirely
+    video.remove();
   }
 
   /* ------------- Nav: hide on scroll down / show on scroll up ------------- */
