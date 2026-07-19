@@ -240,6 +240,11 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   -webkit-backdrop-filter: blur(18px);
   border-bottom: 1px solid rgba(212,160,23,0.3);
   transition: transform 0.4s ease, background 0.3s ease;
+  animation: navDrop 0.8s cubic-bezier(0.22,1,0.36,1);
+}
+@keyframes navDrop {
+  from { opacity: 0; transform: translateY(-30px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 .nav-inner {
   max-width: 1200px;
@@ -576,7 +581,7 @@ section {
   background:
     radial-gradient(ellipse 60% 50% at 90% 5%, rgba(139,90,15,0.10) 0%, transparent 60%),
     radial-gradient(ellipse 40% 45% at 5% 95%, rgba(74,14,18,0.14) 0%, transparent 65%),
-    var(--void-black);
+    rgba(7,5,10,0.52);
 }
 .about-grid {
   display: grid;
@@ -645,7 +650,7 @@ section {
   background:
     radial-gradient(ellipse 55% 45% at 15% 100%, rgba(74,14,18,0.18) 0%, transparent 65%),
     radial-gradient(ellipse 40% 40% at 92% 8%, rgba(139,90,15,0.08) 0%, transparent 60%),
-    var(--void-black);
+    rgba(7,5,10,0.52);
 }
 .services-header {
   max-width: 780px;
@@ -732,7 +737,7 @@ section {
   background:
     radial-gradient(ellipse 55% 45% at 10% 10%, rgba(139,90,15,0.12) 0%, transparent 62%),
     radial-gradient(ellipse 50% 45% at 92% 90%, rgba(74,14,18,0.18) 0%, transparent 65%),
-    var(--void-black);
+    rgba(7,5,10,0.52);
 }
 .works-header {
   max-width: 780px;
@@ -878,7 +883,7 @@ section {
     radial-gradient(ellipse 65% 45% at 30% 25%, rgba(139,90,15,0.20) 0%, transparent 60%),
     radial-gradient(ellipse 55% 45% at 78% 72%, rgba(74,14,18,0.32) 0%, transparent 62%),
     radial-gradient(ellipse 45% 42% at 15% 85%, rgba(44,7,9,0.30) 0%, transparent 62%),
-    #05030A;
+    rgba(5,3,10,0.30);
   opacity: 1;
 }
 .philosophy::after {
@@ -886,7 +891,7 @@ section {
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: rgba(5,3,5,0.76);
+  background: rgba(5,3,5,0.40);
 }
 .philosophy .container { max-width: 1100px; }
 .philosophy-quote {
@@ -945,7 +950,7 @@ section {
   background:
     radial-gradient(ellipse 70% 50% at 50% 0%, rgba(139,90,15,0.10) 0%, transparent 65%),
     radial-gradient(ellipse 50% 50% at 50% 100%, rgba(74,14,18,0.15) 0%, transparent 65%),
-    var(--void-deeper);
+    rgba(4,2,7,0.58);
   text-align: center;
   padding: 150px 0;
 }
@@ -1004,7 +1009,7 @@ section {
   background:
     radial-gradient(ellipse 50% 40% at 90% 90%, rgba(139,90,15,0.10) 0%, transparent 62%),
     radial-gradient(ellipse 40% 45% at 8% 20%, rgba(74,14,18,0.14) 0%, transparent 62%),
-    var(--void-black);
+    rgba(7,5,10,0.52);
 }
 .contact-grid {
   display: grid;
@@ -1180,7 +1185,7 @@ section {
    ============================================================ */
 
 .footer {
-  background: #000;
+  background: rgba(0,0,0,0.68);
   text-align: center;
   padding: 80px 32px 40px;
 }
@@ -1679,19 +1684,19 @@ section {
         <!-- honeypot for spam bots (must stay empty) -->
         <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off" />
 
-        <div class="field">
+        <div class="field reveal-bottom" data-reveal-delay="500">
           <label for="name">Name</label>
           <input id="name" name="name" type="text" placeholder="Your full name" required />
         </div>
-        <div class="field">
+        <div class="field reveal-bottom" data-reveal-delay="600">
           <label for="email">Email</label>
           <input id="email" name="email" type="email" placeholder="you@studio.com" required />
         </div>
-        <div class="field">
+        <div class="field reveal-bottom" data-reveal-delay="700">
           <label for="phone">Phone</label>
           <input id="phone" name="phone" type="tel" placeholder="+91 00000 00000" />
         </div>
-        <div class="field">
+        <div class="field reveal-bottom" data-reveal-delay="800">
           <label for="project">Project Type</label>
           <select id="project" name="project" required>
             <option value="">Select a format…</option>
@@ -1713,14 +1718,14 @@ section {
             <option>Startup &amp; Brand Content</option>
           </select>
         </div>
-        <div class="field">
+        <div class="field reveal-bottom" data-reveal-delay="900">
           <label for="message">Message</label>
           <textarea id="message" name="message" placeholder="Tell us about your vision…" required></textarea>
         </div>
 
         <div class="form-status" id="formStatus" role="status" aria-live="polite"></div>
 
-        <button type="submit" class="form-submit" id="formSubmit">Send Your Vision</button>
+        <button type="submit" class="form-submit reveal-bottom" data-reveal-delay="1000" id="formSubmit">Send Your Vision</button>
       </form>
     </div>
   </div>
@@ -1731,11 +1736,11 @@ section {
      ============================================================ -->
 <footer class="footer">
   <div class="container" style="max-width:900px;">
-    <span class="prismray-logo --footer">
+    <span class="prismray-logo --footer reveal-bottom">
       <svg viewBox="0 0 900 340" role="img" aria-label="PrismRay Studios"><use href="#prismrayLogo"/></svg>
     </span>
-    <p class="footer-tag">Crafting worlds. Frame by frame.</p>
-    <div class="footer-social">
+    <p class="footer-tag reveal-bottom" data-reveal-delay="200">Crafting worlds. Frame by frame.</p>
+    <div class="footer-social reveal-bottom" data-reveal-delay="400">
       <a href="https://www.instagram.com/prismraystudios/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
       </a>
@@ -1743,7 +1748,7 @@ section {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
       </a>
     </div>
-    <p class="footer-copy">© 2025 PrismRay Studios. All Rights Reserved.</p>
+    <p class="footer-copy reveal-bottom" data-reveal-delay="600">© 2025 PrismRay Studios. All Rights Reserved.</p>
   </div>
 </footer>
 
