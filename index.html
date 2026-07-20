@@ -656,78 +656,210 @@ section {
   max-width: 780px;
   margin-bottom: 72px;
 }
-.services-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
-}
-.service-card {
+/* ---- FILM-REEL SCROLLER ---- */
+.reel-track {
   position: relative;
-  background:
-    linear-gradient(180deg, rgba(20,14,10,0.72) 0%, rgba(10,7,5,0.85) 100%);
-  backdrop-filter: blur(6px);
-  border: 1px solid var(--panel-line);
-  border-left: 1px solid transparent;
-  border-radius: 2px;
-  padding: 34px 28px;
-  transition: background 0.5s ease, border-color 0.5s ease, transform 0.5s cubic-bezier(0.22,1,0.36,1), box-shadow 0.5s ease;
-  cursor: pointer;
+  /* height set by JS for the pinned scroll distance; this is a fallback */
+  height: auto;
+}
+.reel-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 26px;
+}
+/* Pinned via JS-toggled position (sticky breaks under ancestor overflow:hidden). */
+.has-js .reel-stage {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 100vh;
   overflow: hidden;
 }
-.service-card::before {
-  content: "";
-  position: absolute;
-  left: 0; top: 0; bottom: 0;
-  width: 2px;
-  background: linear-gradient(180deg, var(--pale-gold) 0%, var(--gold) 50%, var(--amber-glow) 100%);
-  transform: scaleY(0);
-  transform-origin: bottom;
-  transition: transform 0.5s cubic-bezier(0.22,1,0.36,1);
+.has-js .reel-stage.is-fixed { position: fixed; top: 0; }
+.has-js .reel-stage.is-after { position: absolute; top: auto; bottom: 0; }
+
+/* the projector gate */
+.reel-window {
+  position: relative;
+  width: min(780px, 88vw);
+  height: 58vh;
+  max-height: 560px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: linear-gradient(180deg, rgba(10,7,5,0.55) 0%, rgba(6,4,7,0.6) 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(212,160,23,0.22),
+    inset 0 0 80px rgba(0,0,0,0.65),
+    0 40px 90px -30px rgba(0,0,0,0.85);
 }
-.service-card::after {
+/* gate vignette — fades cells entering / leaving the gate */
+.reel-window::before,
+.reel-window::after {
   content: "";
   position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(212,160,23,0.06) 0%, transparent 60%);
-  opacity: 0;
-  transition: opacity 0.5s ease;
+  left: 0; right: 0;
+  height: 26%;
+  z-index: 3;
   pointer-events: none;
 }
-.service-card:hover {
-  background: linear-gradient(180deg, rgba(30,22,14,0.85) 0%, rgba(15,10,7,0.9) 100%);
-  border-color: rgba(212,160,23,0.42);
-  transform: translateY(-6px);
-  box-shadow: 0 24px 60px -20px rgba(0,0,0,0.7), 0 0 0 1px rgba(212,160,23,0.08);
+.reel-window::before {
+  top: 0;
+  background: linear-gradient(180deg, rgba(5,3,6,0.92) 0%, rgba(5,3,6,0) 100%);
 }
-.service-card:hover::after { opacity: 1; }
-.service-card:hover::before { transform: scaleY(1); transform-origin: top; }
-.service-card:hover .service-icon {
-  color: var(--pale-gold);
-  filter: drop-shadow(0 0 8px rgba(212,160,23,0.55));
+.reel-window::after {
+  bottom: 0;
+  background: linear-gradient(0deg, rgba(5,3,6,0.92) 0%, rgba(5,3,6,0) 100%);
 }
-.service-icon {
-  width: 32px; height: 32px;
-  color: var(--gold);
-  margin-bottom: 22px;
-  transition: color 0.35s ease, filter 0.35s ease;
+
+/* the film itself — translated vertically */
+.reel-strip {
+  position: relative;
+  padding: 0 58px;
+  will-change: transform;
 }
-.service-icon svg { width: 100%; height: 100%; }
-.service-name {
+/* sprocket perforations punched down both film edges (move with the film) */
+.reel-strip::before,
+.reel-strip::after {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 34px;
+  background: linear-gradient(90deg, rgba(8,6,6,0.9), rgba(16,11,9,0.9));
+  -webkit-mask: repeating-linear-gradient(to bottom,
+    #000 0 12px, rgba(0,0,0,0) 12px 30px, #000 30px 40px);
+          mask: repeating-linear-gradient(to bottom,
+    #000 0 12px, rgba(0,0,0,0) 12px 30px, #000 30px 40px);
+}
+.reel-strip::before { left: 0;  border-right: 1px solid rgba(212,160,23,0.12); }
+.reel-strip::after  { right: 0; border-left:  1px solid rgba(212,160,23,0.12); }
+
+/* one service = one film cell */
+.reel-frame {
+  height: 58vh;
+  max-height: 560px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 32px clamp(20px, 6vw, 72px);
+  position: relative;
+  border-top: 1px solid rgba(212,160,23,0.10);
+  border-bottom: 1px solid rgba(0,0,0,0.55);
+  will-change: opacity, filter, transform;
+}
+.frame-no {
   font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
   font-weight: 600;
-  font-size: 22px;
-  line-height: 1.25;
+  font-size: clamp(40px, 6vw, 64px);
+  line-height: 1;
+  background: linear-gradient(180deg, var(--pale-gold) 0%, var(--gold) 60%, var(--amber-glow) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  opacity: 0.85;
+}
+.frame-no small {
+  font-size: 0.34em;
+  color: rgba(245,240,232,0.4);
+  -webkit-text-fill-color: rgba(245,240,232,0.4);
+  letter-spacing: 0.2em;
+  margin-left: 4px;
+}
+.frame-icon {
+  width: 46px; height: 46px;
+  color: var(--gold);
+  margin: 22px 0 20px;
+  filter: drop-shadow(0 0 14px rgba(212,160,23,0.4));
+}
+.frame-icon svg { width: 100%; height: 100%; }
+.frame-name {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: clamp(30px, 4.6vw, 52px);
+  line-height: 1.1;
   color: var(--white-star);
-  margin-bottom: 12px;
   letter-spacing: 0.005em;
+  max-width: 620px;
 }
-.service-desc {
+.frame-desc {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(17px, 2.2vw, 23px);
+  line-height: 1.5;
+  color: rgba(245,240,232,0.72);
+  margin-top: 18px;
+  max-width: 520px;
+}
+
+/* HUD — frame counter, progress rail, spinning reel */
+.reel-hud {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  width: min(780px, 88vw);
+  justify-content: center;
+}
+.reel-disk { width: 42px; height: 42px; color: var(--gold); flex-shrink: 0; }
+.reel-disk svg { width: 100%; height: 100%; display: block; }
+.reel-count {
   font-family: 'Montserrat', sans-serif;
-  font-weight: 300;
+  font-weight: 500;
   font-size: 13px;
-  line-height: 1.7;
-  color: rgba(245,240,232,0.68);
+  letter-spacing: 0.3em;
+  color: rgba(245,240,232,0.7);
+  min-width: 78px;
+  text-align: center;
 }
+.reel-count b { color: var(--gold); font-weight: 600; }
+.reel-progress {
+  position: relative;
+  flex: 1;
+  max-width: 320px;
+  height: 1px;
+  background: rgba(212,160,23,0.2);
+  overflow: hidden;
+}
+.reel-progress span {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 0%;
+  background: linear-gradient(90deg, var(--amber-glow), var(--gold), var(--pale-gold));
+}
+.reel-hint {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: rgba(245,240,232,0.4);
+}
+
+/* ---- STATIC FALLBACK (no-JS / reduced motion): simple stacked list ---- */
+.reel-track.reel--static,
+:root:not(.has-js) .reel-track { height: auto !important; }
+.reel--static .reel-stage,
+:root:not(.has-js) .reel-stage { position: static; height: auto; display: block; }
+.reel--static .reel-window,
+:root:not(.has-js) .reel-window {
+  height: auto; max-height: none; width: 100%;
+  box-shadow: inset 0 0 0 1px rgba(212,160,23,0.16);
+}
+.reel--static .reel-window::before,
+.reel--static .reel-window::after,
+:root:not(.has-js) .reel-window::before,
+:root:not(.has-js) .reel-window::after { display: none; }
+.reel--static .reel-strip,
+:root:not(.has-js) .reel-strip { transform: none !important; }
+.reel--static .reel-frame,
+:root:not(.has-js) .reel-frame {
+  height: auto; max-height: none; opacity: 1 !important;
+  filter: none !important; padding: 56px 32px;
+}
+.reel--static .reel-hud,
+:root:not(.has-js) .reel-hud { display: none; }
 
 /* ============================================================
    WORKS (video showcase)
@@ -1234,7 +1366,6 @@ section {
    ============================================================ */
 
 @media (max-width: 1024px) {
-  .services-grid { grid-template-columns: repeat(2, 1fr); }
   .about-grid { gap: 60px; }
   .pillars { gap: 36px; }
 }
@@ -1255,8 +1386,14 @@ section {
   .about-stats { border-left: none; border-top: 1px solid var(--panel-line-hi); padding-left: 0; padding-top: 40px; }
   .stat-num { font-size: 46px; }
 
-  .services-grid { grid-template-columns: 1fr; gap: 18px; }
-  .services-header { margin-bottom: 48px; }
+  .services-header { margin-bottom: 40px; }
+  .reel-window { height: 62vh; }
+  .reel-frame { height: 62vh; }
+  .reel-strip { padding: 0 40px; }
+  .reel-strip::before, .reel-strip::after { width: 24px; }
+  .reel-hud { gap: 14px; }
+  .reel-progress { max-width: 140px; }
+  .reel-hint { display: none; }
 
   .philosophy { padding: 90px 0; }
   .philosophy-quote { font-size: 24px; }
@@ -1500,12 +1637,33 @@ section {
       <h2 class="section-title reveal-right" data-reveal-delay="150">A Universe of <em>Creative Formats</em></h2>
       <p class="section-lead reveal-bottom" data-reveal-delay="300">
         From a 15-second reel to a feature-length film — every format receives identical creative
-        attention, production craft, and cinematic intention.
+        attention, production craft, and cinematic intention. Scroll to run the reel.
       </p>
     </div>
+  </div>
 
-    <div class="services-grid" id="servicesGrid">
-      <!-- populated by JS -->
+  <div class="reel-track" id="reelTrack">
+    <div class="reel-stage">
+      <div class="reel-window">
+        <div class="reel-strip" id="reelStrip">
+          <!-- film cells injected by JS -->
+        </div>
+      </div>
+      <div class="reel-hud" aria-hidden="true">
+        <span class="reel-disk" id="reelDisk">
+          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6">
+            <circle cx="24" cy="24" r="21"/>
+            <circle cx="24" cy="24" r="4.5" fill="currentColor" stroke="none"/>
+            <circle cx="24" cy="10" r="3"/>
+            <circle cx="24" cy="38" r="3"/>
+            <circle cx="10" cy="24" r="3"/>
+            <circle cx="38" cy="24" r="3"/>
+          </svg>
+        </span>
+        <span class="reel-count"><b id="reelNo">01</b> / 16</span>
+        <span class="reel-progress"><span id="reelBar"></span></span>
+        <span class="reel-hint">Scroll ↓</span>
+      </div>
     </div>
   </div>
 </section>
@@ -1759,6 +1917,9 @@ section {
 (function () {
   'use strict';
 
+  // Signal that JS is on so the film-reel uses its pinned layout.
+  document.documentElement.classList.add('has-js');
+
   /* ------------- Services data ------------- */
   const SERVICES = [
     { name: "Cinematic Brand Films",    desc: "Your brand story told with the language of cinema.",                   icon: "film" },
@@ -1798,28 +1959,109 @@ section {
     diamond:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 12L2 9l4-6z"/><line x1="6" y1="3" x2="10" y2="9"/><line x1="18" y1="3" x2="14" y2="9"/><line x1="2" y1="9" x2="22" y2="9"/></svg>'
   };
 
-  /* ------------- Render service cards ------------- */
-  const grid = document.getElementById('servicesGrid');
-  if (grid) {
+  /* ------------- Render film-reel cells ------------- */
+  const strip = document.getElementById('reelStrip');
+  const N = SERVICES.length;
+  if (strip) {
     const frag = document.createDocumentFragment();
     SERVICES.forEach((s, i) => {
-      const card = document.createElement('div');
-      // Alternate slide direction by grid column for a cinematic waterfall
-      const col = i % 4;
-      const dir = (col === 0 || col === 2) ? 'reveal-left'
-                : (col === 1 || col === 3) ? 'reveal-right'
-                : 'reveal-bottom';
-      card.className = `service-card ${dir}`;
-      card.setAttribute('data-reveal-delay', String(i * 80));
-      card.innerHTML = `
-        <div class="service-icon">${ICONS[s.icon] || ICONS.star}</div>
-        <h3 class="service-name">${s.name}</h3>
-        <p class="service-desc">${s.desc}</p>
+      const cell = document.createElement('div');
+      cell.className = 'reel-frame';
+      const no = String(i + 1).padStart(2, '0');
+      cell.innerHTML = `
+        <div class="frame-no">${no}<small>/ ${N}</small></div>
+        <div class="frame-icon">${ICONS[s.icon] || ICONS.star}</div>
+        <h3 class="frame-name">${s.name}</h3>
+        <p class="frame-desc">${s.desc}</p>
       `;
-      frag.appendChild(card);
+      frag.appendChild(cell);
     });
-    grid.appendChild(frag);
+    strip.appendChild(frag);
   }
+
+  /* ------------- Film-reel scroll controller ------------- */
+  (function initReel() {
+    const track = document.getElementById('reelTrack');
+    if (!track || !strip || !strip.children.length) return;
+
+    const frames  = strip.children;
+    const count   = frames.length;
+    const stage   = track.querySelector('.reel-stage');
+    const noEl    = document.getElementById('reelNo');
+    const barEl   = document.getElementById('reelBar');
+    const diskEl  = document.getElementById('reelDisk');
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Reduced motion → static stacked list, no pin, no scroll math.
+    if (reduced) { track.classList.add('reel--static'); return; }
+
+    // Per-service scroll distance (fraction of a viewport). Tune to taste.
+    const stepFrac = window.matchMedia('(max-width: 768px)').matches ? 0.5 : 0.62;
+
+    let targetPos = 0, curPos = 0, raf = false, pinState = '';
+
+    function sizeTrack() {
+      // Reserved height = one viewport (the pinned stage) + (count-1) scroll steps.
+      const step = window.innerHeight * stepFrac;
+      track.style.height = Math.round(window.innerHeight + (count - 1) * step) + 'px';
+    }
+
+    function setPin(state) {
+      if (state === pinState) return;
+      pinState = state;
+      stage.classList.toggle('is-fixed', state === 'fixed');
+      stage.classList.toggle('is-after', state === 'after');
+    }
+
+    function readScroll() {
+      const rect  = track.getBoundingClientRect();
+      const total = track.offsetHeight - window.innerHeight;
+      if (total <= 0) { setPin('before'); targetPos = 0; kick(); return; }
+      const scrolled = Math.min(Math.max(-rect.top, 0), total);
+      // Pin the stage to the viewport only while inside the track's range.
+      if (rect.top > 0)            setPin('before');
+      else if (scrolled < total)   setPin('fixed');
+      else                         setPin('after');
+      const p = scrolled / total;               // 0 → 1 across the pin
+      targetPos = p * (count - 1);              // 0 → count-1
+      kick();
+    }
+
+    function kick() { if (!raf) { raf = true; requestAnimationFrame(tick); } }
+
+    function tick() {
+      curPos += (targetPos - curPos) * 0.16;
+      if (Math.abs(targetPos - curPos) < 0.0008) curPos = targetPos;
+      render(curPos);
+      if (Math.abs(targetPos - curPos) > 0.0004) {
+        requestAnimationFrame(tick);
+      } else {
+        raf = false;
+      }
+    }
+
+    function render(pos) {
+      const frameH = frames[0].getBoundingClientRect().height;
+      strip.style.transform = 'translateY(' + (-pos * frameH) + 'px)';
+      const active = Math.round(pos);
+      for (let i = 0; i < count; i++) {
+        const d = Math.abs(i - pos);
+        const f = frames[i];
+        // Only the cell in the gate is fully lit; neighbours fade + blur.
+        f.style.opacity = Math.max(0, 1 - d * 0.82) + '';
+        f.style.filter  = d > 0.5 ? 'blur(' + Math.min(d * 2.4, 6).toFixed(2) + 'px)' : 'none';
+        f.style.transform = 'scale(' + (1 - Math.min(d, 1) * 0.06).toFixed(3) + ')';
+      }
+      if (noEl)   noEl.textContent = String(active + 1).padStart(2, '0');
+      if (barEl)  barEl.style.width = ((count > 1 ? pos / (count - 1) : 0) * 100).toFixed(1) + '%';
+      if (diskEl) diskEl.style.transform = 'rotate(' + (pos * 120).toFixed(1) + 'deg)';
+    }
+
+    sizeTrack();
+    readScroll();
+    window.addEventListener('scroll', readScroll, { passive: true });
+    window.addEventListener('resize', function () { sizeTrack(); readScroll(); }, { passive: true });
+  })();
 
   /* ------------- Star particle field ------------- */
   const particlesEl = document.getElementById('particles');
