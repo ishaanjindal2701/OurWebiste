@@ -656,18 +656,17 @@ section {
   max-width: 780px;
   margin-bottom: 72px;
 }
-/* ---- FILM-REEL SCROLLER ---- */
+/* ---- 3D CIRCULAR FILM-REEL CAROUSEL ---- */
 .reel-track {
   position: relative;
-  /* height set by JS for the pinned scroll distance; this is a fallback */
-  height: auto;
+  height: auto; /* set by JS for the pinned scroll distance */
 }
 .reel-stage {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 26px;
+  gap: 30px;
 }
 /* Pinned via JS-toggled position (sticky breaks under ancestor overflow:hidden). */
 .has-js .reel-stage {
@@ -675,132 +674,147 @@ section {
   top: 0; left: 0; right: 0;
   height: 100vh;
   overflow: hidden;
+  perspective: 1600px;
+  perspective-origin: 50% 46%;
 }
 .has-js .reel-stage.is-fixed { position: fixed; top: 0; }
 .has-js .reel-stage.is-after { position: absolute; top: auto; bottom: 0; }
 
-/* the projector gate */
-.reel-window {
-  position: relative;
-  width: min(780px, 88vw);
-  height: 58vh;
-  max-height: 560px;
-  overflow: hidden;
-  border-radius: 3px;
-  background: linear-gradient(180deg, rgba(10,7,5,0.55) 0%, rgba(6,4,7,0.6) 100%);
-  box-shadow:
-    inset 0 0 0 1px rgba(212,160,23,0.22),
-    inset 0 0 80px rgba(0,0,0,0.65),
-    0 40px 90px -30px rgba(0,0,0,0.85);
-}
-/* gate vignette — fades cells entering / leaving the gate */
-.reel-window::before,
-.reel-window::after {
-  content: "";
+/* big circular film reel spinning behind the cards */
+.reel-backdisk {
   position: absolute;
-  left: 0; right: 0;
-  height: 26%;
-  z-index: 3;
+  top: 47%; left: 50%;
+  width: min(74vh, 660px);
+  aspect-ratio: 1 / 1;
+  transform: translate(-50%, -50%) rotateX(24deg);
+  transform-style: preserve-3d;
+  z-index: 0;
   pointer-events: none;
+  opacity: 0.5;
 }
-.reel-window::before {
-  top: 0;
-  background: linear-gradient(180deg, rgba(5,3,6,0.92) 0%, rgba(5,3,6,0) 100%);
-}
-.reel-window::after {
-  bottom: 0;
-  background: linear-gradient(0deg, rgba(5,3,6,0.92) 0%, rgba(5,3,6,0) 100%);
-}
-
-/* the film itself — translated vertically */
-.reel-strip {
-  position: relative;
-  padding: 0 58px;
+.reel-backdisk .disk-spin {
+  width: 100%; height: 100%;
+  color: rgba(212,160,23,0.5);
   will-change: transform;
+  filter: drop-shadow(0 40px 90px rgba(0,0,0,0.7));
 }
-/* sprocket perforations punched down both film edges (move with the film) */
-.reel-strip::before,
-.reel-strip::after {
-  content: "";
-  position: absolute;
-  top: 0; bottom: 0;
-  width: 34px;
-  background: linear-gradient(90deg, rgba(8,6,6,0.9), rgba(16,11,9,0.9));
-  -webkit-mask: repeating-linear-gradient(to bottom,
-    #000 0 12px, rgba(0,0,0,0) 12px 30px, #000 30px 40px);
-          mask: repeating-linear-gradient(to bottom,
-    #000 0 12px, rgba(0,0,0,0) 12px 30px, #000 30px 40px);
-}
-.reel-strip::before { left: 0;  border-right: 1px solid rgba(212,160,23,0.12); }
-.reel-strip::after  { right: 0; border-left:  1px solid rgba(212,160,23,0.12); }
+.reel-backdisk svg { width: 100%; height: 100%; display: block; }
 
-/* one service = one film cell */
-.reel-frame {
-  height: 58vh;
-  max-height: 560px;
+/* the 3D carousel plane */
+.reel3d {
+  position: relative;
+  width: min(420px, 80vw);
+  height: min(520px, 60vh);
+  transform-style: preserve-3d;
+  z-index: 2;
+}
+/* each service = a film card floating in 3D */
+.reel-card {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  transform-style: preserve-3d;
+  will-change: transform, opacity;
+  transition: opacity 0.25s linear;
+}
+.reel-card-inner {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 32px clamp(20px, 6vw, 72px);
-  position: relative;
-  border-top: 1px solid rgba(212,160,23,0.10);
-  border-bottom: 1px solid rgba(0,0,0,0.55);
-  will-change: opacity, filter, transform;
+  padding: 56px clamp(20px, 4vw, 40px);
+  border-radius: 5px;
+  background: linear-gradient(180deg, rgba(24,17,12,0.94) 0%, rgba(9,6,8,0.96) 100%);
+  border: 1px solid rgba(212,160,23,0.28);
+  box-shadow:
+    0 50px 90px -34px rgba(0,0,0,0.9),
+    inset 0 0 70px rgba(0,0,0,0.55);
+  overflow: hidden;
+  transition: border-color 0.4s ease, box-shadow 0.4s ease;
 }
-.frame-no {
+/* film sprocket rows top and bottom of each card */
+.reel-card-inner::before,
+.reel-card-inner::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0;
+  height: 20px;
+  background:
+    repeating-linear-gradient(90deg,
+      rgba(0,0,0,0.85) 0 9px, rgba(0,0,0,0) 9px 12px,
+      rgba(0,0,0,0.85) 12px 20px, rgba(0,0,0,0) 20px 26px) ,
+    linear-gradient(90deg, rgba(6,4,5,0.95), rgba(14,10,8,0.95));
+  -webkit-mask: repeating-linear-gradient(90deg, #000 0 12px, rgba(0,0,0,0) 12px 24px);
+          mask: repeating-linear-gradient(90deg, #000 0 12px, rgba(0,0,0,0) 12px 24px);
+  opacity: 0.9;
+}
+.reel-card-inner::before { top: 0; }
+.reel-card-inner::after  { bottom: 0; }
+
+.reel-card.is-active .reel-card-inner {
+  border-color: rgba(212,160,23,0.7);
+  box-shadow:
+    0 50px 100px -30px rgba(0,0,0,0.9),
+    0 0 60px -10px rgba(212,160,23,0.35),
+    inset 0 0 60px rgba(0,0,0,0.45);
+}
+
+.rc-no {
   font-family: 'Cormorant Garamond', serif;
   font-style: italic;
   font-weight: 600;
-  font-size: clamp(40px, 6vw, 64px);
+  font-size: clamp(34px, 5vw, 56px);
   line-height: 1;
   background: linear-gradient(180deg, var(--pale-gold) 0%, var(--gold) 60%, var(--amber-glow) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  opacity: 0.85;
+  opacity: 0.9;
 }
-.frame-no small {
+.rc-no small {
   font-size: 0.34em;
-  color: rgba(245,240,232,0.4);
   -webkit-text-fill-color: rgba(245,240,232,0.4);
+  color: rgba(245,240,232,0.4);
   letter-spacing: 0.2em;
   margin-left: 4px;
 }
-.frame-icon {
-  width: 46px; height: 46px;
+.rc-icon {
+  width: 44px; height: 44px;
   color: var(--gold);
-  margin: 22px 0 20px;
+  margin: 20px 0 18px;
   filter: drop-shadow(0 0 14px rgba(212,160,23,0.4));
 }
-.frame-icon svg { width: 100%; height: 100%; }
-.frame-name {
+.rc-icon svg { width: 100%; height: 100%; }
+.rc-name {
   font-family: 'Playfair Display', serif;
   font-weight: 700;
-  font-size: clamp(30px, 4.6vw, 52px);
-  line-height: 1.1;
+  font-size: clamp(24px, 3vw, 34px);
+  line-height: 1.14;
   color: var(--white-star);
-  letter-spacing: 0.005em;
-  max-width: 620px;
+  max-width: 320px;
 }
-.frame-desc {
+.rc-desc {
   font-family: 'Cormorant Garamond', serif;
   font-style: italic;
   font-weight: 500;
-  font-size: clamp(17px, 2.2vw, 23px);
+  font-size: clamp(15px, 1.9vw, 20px);
   line-height: 1.5;
-  color: rgba(245,240,232,0.72);
-  margin-top: 18px;
-  max-width: 520px;
+  color: rgba(245,240,232,0.7);
+  margin-top: 16px;
+  max-width: 300px;
 }
 
 /* HUD — frame counter, progress rail, spinning reel */
 .reel-hud {
+  position: relative;
+  z-index: 4;
   display: flex;
   align-items: center;
   gap: 24px;
-  width: min(780px, 88vw);
+  width: min(560px, 88vw);
   justify-content: center;
 }
 .reel-disk { width: 42px; height: 42px; color: var(--gold); flex-shrink: 0; }
@@ -837,29 +851,37 @@ section {
   color: rgba(245,240,232,0.4);
 }
 
-/* ---- STATIC FALLBACK (no-JS / reduced motion): simple stacked list ---- */
+/* ---- STATIC FALLBACK (no-JS / reduced motion): stacked cards ---- */
 .reel-track.reel--static,
 :root:not(.has-js) .reel-track { height: auto !important; }
 .reel--static .reel-stage,
-:root:not(.has-js) .reel-stage { position: static; height: auto; display: block; }
-.reel--static .reel-window,
-:root:not(.has-js) .reel-window {
-  height: auto; max-height: none; width: 100%;
-  box-shadow: inset 0 0 0 1px rgba(212,160,23,0.16);
+:root:not(.has-js) .reel-stage {
+  position: static; height: auto; display: block; perspective: none;
 }
-.reel--static .reel-window::before,
-.reel--static .reel-window::after,
-:root:not(.has-js) .reel-window::before,
-:root:not(.has-js) .reel-window::after { display: none; }
-.reel--static .reel-strip,
-:root:not(.has-js) .reel-strip { transform: none !important; }
-.reel--static .reel-frame,
-:root:not(.has-js) .reel-frame {
-  height: auto; max-height: none; opacity: 1 !important;
-  filter: none !important; padding: 56px 32px;
+.reel--static .reel-backdisk,
+:root:not(.has-js) .reel-backdisk { display: none; }
+.reel--static .reel3d,
+:root:not(.has-js) .reel3d {
+  width: 100%; height: auto;
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px;
+  transform: none !important;
+}
+.reel--static .reel-card,
+:root:not(.has-js) .reel-card {
+  position: relative;
+  width: 100%; height: auto;
+  opacity: 1 !important; transform: none !important;
+}
+.reel--static .reel-card-inner,
+:root:not(.has-js) .reel-card-inner {
+  position: relative; inset: auto; min-height: 240px; padding: 44px 28px;
 }
 .reel--static .reel-hud,
 :root:not(.has-js) .reel-hud { display: none; }
+@media (max-width: 640px) {
+  .reel--static .reel3d,
+  :root:not(.has-js) .reel3d { grid-template-columns: 1fr; }
+}
 
 /* ============================================================
    WORKS (video showcase)
@@ -1387,12 +1409,10 @@ section {
   .stat-num { font-size: 46px; }
 
   .services-header { margin-bottom: 40px; }
-  .reel-window { height: 62vh; }
-  .reel-frame { height: 62vh; }
-  .reel-strip { padding: 0 40px; }
-  .reel-strip::before, .reel-strip::after { width: 24px; }
+  .reel3d { width: min(320px, 82vw); height: min(440px, 56vh); }
+  .reel-backdisk { width: min(58vh, 380px); }
   .reel-hud { gap: 14px; }
-  .reel-progress { max-width: 140px; }
+  .reel-progress { max-width: 130px; }
   .reel-hint { display: none; }
 
   .philosophy { padding: 90px 0; }
@@ -1644,11 +1664,32 @@ section {
 
   <div class="reel-track" id="reelTrack">
     <div class="reel-stage">
-      <div class="reel-window">
-        <div class="reel-strip" id="reelStrip">
-          <!-- film cells injected by JS -->
+      <!-- spinning circular film reel behind the cards -->
+      <div class="reel-backdisk" aria-hidden="true">
+        <div class="disk-spin" id="reelBackDisk">
+          <svg viewBox="0 0 200 200" fill="none">
+            <circle cx="100" cy="100" r="97" stroke="currentColor" stroke-width="2"/>
+            <circle cx="100" cy="100" r="88" stroke="currentColor" stroke-width="1" opacity="0.5"/>
+            <circle cx="100" cy="100" r="22" stroke="currentColor" stroke-width="3"/>
+            <circle cx="100" cy="100" r="7" fill="currentColor"/>
+            <!-- 6 spoke holes -->
+            <g fill="currentColor" opacity="0.9">
+              <circle cx="100" cy="42"  r="15"/>
+              <circle cx="150" cy="71"  r="15"/>
+              <circle cx="150" cy="129" r="15"/>
+              <circle cx="100" cy="158" r="15"/>
+              <circle cx="50"  cy="129" r="15"/>
+              <circle cx="50"  cy="71"  r="15"/>
+            </g>
+          </svg>
         </div>
       </div>
+
+      <!-- 3D carousel of service cards -->
+      <div class="reel3d" id="reel3d">
+        <!-- cards injected by JS -->
+      </div>
+
       <div class="reel-hud" aria-hidden="true">
         <span class="reel-disk" id="reelDisk">
           <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6">
@@ -1959,49 +2000,57 @@ section {
     diamond:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 12L2 9l4-6z"/><line x1="6" y1="3" x2="10" y2="9"/><line x1="18" y1="3" x2="14" y2="9"/><line x1="2" y1="9" x2="22" y2="9"/></svg>'
   };
 
-  /* ------------- Render film-reel cells ------------- */
-  const strip = document.getElementById('reelStrip');
+  /* ------------- Render 3D reel cards ------------- */
+  const reel3d = document.getElementById('reel3d');
   const N = SERVICES.length;
-  if (strip) {
+  if (reel3d) {
     const frag = document.createDocumentFragment();
     SERVICES.forEach((s, i) => {
-      const cell = document.createElement('div');
-      cell.className = 'reel-frame';
+      const card = document.createElement('div');
+      card.className = 'reel-card';
       const no = String(i + 1).padStart(2, '0');
-      cell.innerHTML = `
-        <div class="frame-no">${no}<small>/ ${N}</small></div>
-        <div class="frame-icon">${ICONS[s.icon] || ICONS.star}</div>
-        <h3 class="frame-name">${s.name}</h3>
-        <p class="frame-desc">${s.desc}</p>
+      card.innerHTML = `
+        <div class="reel-card-inner">
+          <div class="rc-no">${no}<small>/ ${N}</small></div>
+          <div class="rc-icon">${ICONS[s.icon] || ICONS.star}</div>
+          <h3 class="rc-name">${s.name}</h3>
+          <p class="rc-desc">${s.desc}</p>
+        </div>
       `;
-      frag.appendChild(cell);
+      frag.appendChild(card);
     });
-    strip.appendChild(frag);
+    reel3d.appendChild(frag);
   }
 
-  /* ------------- Film-reel scroll controller ------------- */
+  /* ------------- 3D film-reel carousel controller ------------- */
   (function initReel() {
     const track = document.getElementById('reelTrack');
-    if (!track || !strip || !strip.children.length) return;
+    if (!track || !reel3d || !reel3d.children.length) return;
 
-    const frames  = strip.children;
-    const count   = frames.length;
-    const stage   = track.querySelector('.reel-stage');
-    const noEl    = document.getElementById('reelNo');
-    const barEl   = document.getElementById('reelBar');
-    const diskEl  = document.getElementById('reelDisk');
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const cards    = reel3d.children;
+    const count    = cards.length;
+    const stage    = track.querySelector('.reel-stage');
+    const noEl     = document.getElementById('reelNo');
+    const barEl    = document.getElementById('reelBar');
+    const diskEl   = document.getElementById('reelDisk');
+    const backDisk = document.getElementById('reelBackDisk');
+    const reduced  = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    // Reduced motion → static stacked list, no pin, no scroll math.
+    // Reduced motion → static grid of cards, no pin, no scroll math.
     if (reduced) { track.classList.add('reel--static'); return; }
 
+    const mobile = window.matchMedia('(max-width: 768px)').matches;
     // Per-service scroll distance (fraction of a viewport). Tune to taste.
-    const stepFrac = window.matchMedia('(max-width: 768px)').matches ? 0.5 : 0.62;
+    const stepFrac = mobile ? 0.52 : 0.64;
+    // Coverflow geometry
+    const SPREAD = mobile ? 150 : 300;  // px sideways per neighbour
+    const ROT    = 34;                  // deg rotateY per neighbour
+    const DEPTH  = mobile ? 120 : 230;  // px pushed back per neighbour
+    const VISIBLE = 3;                  // how many cards each side stay visible
 
     let targetPos = 0, curPos = 0, raf = false, pinState = '';
 
     function sizeTrack() {
-      // Reserved height = one viewport (the pinned stage) + (count-1) scroll steps.
       const step = window.innerHeight * stepFrac;
       track.style.height = Math.round(window.innerHeight + (count - 1) * step) + 'px';
     }
@@ -2018,43 +2067,53 @@ section {
       const total = track.offsetHeight - window.innerHeight;
       if (total <= 0) { setPin('before'); targetPos = 0; kick(); return; }
       const scrolled = Math.min(Math.max(-rect.top, 0), total);
-      // Pin the stage to the viewport only while inside the track's range.
-      if (rect.top > 0)            setPin('before');
-      else if (scrolled < total)   setPin('fixed');
-      else                         setPin('after');
-      const p = scrolled / total;               // 0 → 1 across the pin
-      targetPos = p * (count - 1);              // 0 → count-1
+      if (rect.top > 0)          setPin('before');
+      else if (scrolled < total) setPin('fixed');
+      else                       setPin('after');
+      targetPos = (scrolled / total) * (count - 1);   // 0 → count-1
       kick();
     }
 
     function kick() { if (!raf) { raf = true; requestAnimationFrame(tick); } }
 
     function tick() {
-      curPos += (targetPos - curPos) * 0.16;
+      curPos += (targetPos - curPos) * 0.15;
       if (Math.abs(targetPos - curPos) < 0.0008) curPos = targetPos;
       render(curPos);
-      if (Math.abs(targetPos - curPos) > 0.0004) {
-        requestAnimationFrame(tick);
-      } else {
-        raf = false;
-      }
+      if (Math.abs(targetPos - curPos) > 0.0004) requestAnimationFrame(tick);
+      else raf = false;
     }
 
     function render(pos) {
-      const frameH = frames[0].getBoundingClientRect().height;
-      strip.style.transform = 'translateY(' + (-pos * frameH) + 'px)';
       const active = Math.round(pos);
       for (let i = 0; i < count; i++) {
-        const d = Math.abs(i - pos);
-        const f = frames[i];
-        // Only the cell in the gate is fully lit; neighbours fade + blur.
-        f.style.opacity = Math.max(0, 1 - d * 0.82) + '';
-        f.style.filter  = d > 0.5 ? 'blur(' + Math.min(d * 2.4, 6).toFixed(2) + 'px)' : 'none';
-        f.style.transform = 'scale(' + (1 - Math.min(d, 1) * 0.06).toFixed(3) + ')';
+        const card = cards[i];
+        const d = i - pos;                 // signed offset from the front
+        const ad = Math.abs(d);
+        if (ad > VISIBLE + 0.5) {
+          // far cards: parked out of sight
+          card.style.opacity = '0';
+          card.style.pointerEvents = 'none';
+          card.style.transform =
+            'translateX(' + (Math.sign(d) * (SPREAD * VISIBLE + 200)) + 'px) translateZ(-600px)';
+          continue;
+        }
+        const cl = Math.max(-VISIBLE, Math.min(VISIBLE, d));
+        const x   = cl * SPREAD;
+        const z   = -Math.abs(cl) * DEPTH;
+        const ry  = -cl * ROT;             // scroll down → cards swing to the right
+        const sc  = 1 - Math.min(ad, VISIBLE) * 0.10;
+        card.style.transform =
+          'translateX(' + x.toFixed(1) + 'px) translateZ(' + z.toFixed(1) + 'px) ' +
+          'rotateY(' + ry.toFixed(2) + 'deg) scale(' + sc.toFixed(3) + ')';
+        card.style.opacity = Math.max(0, 1 - ad * 0.34).toFixed(3);
+        card.style.zIndex  = String(100 - Math.round(ad * 10));
+        card.classList.toggle('is-active', ad < 0.5);
       }
-      if (noEl)   noEl.textContent = String(active + 1).padStart(2, '0');
-      if (barEl)  barEl.style.width = ((count > 1 ? pos / (count - 1) : 0) * 100).toFixed(1) + '%';
-      if (diskEl) diskEl.style.transform = 'rotate(' + (pos * 120).toFixed(1) + 'deg)';
+      if (noEl)     noEl.textContent = String(active + 1).padStart(2, '0');
+      if (barEl)    barEl.style.width = ((count > 1 ? pos / (count - 1) : 0) * 100).toFixed(1) + '%';
+      if (diskEl)   diskEl.style.transform    = 'rotate(' + (pos * 90).toFixed(1) + 'deg)';
+      if (backDisk) backDisk.style.transform  = 'rotate(' + (pos * 40).toFixed(1) + 'deg)';
     }
 
     sizeTrack();
